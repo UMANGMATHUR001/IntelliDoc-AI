@@ -7,6 +7,7 @@ This is a Streamlit-based web application that allows users to upload PDF docume
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+UI Preferences: Clean interface with dark/light mode support, professional branding with "IntelliDoc AI"
 
 ## System Architecture
 
@@ -23,12 +24,14 @@ The application follows a modular architecture with clear separation of concerns
 ### Core Modules
 
 1. **app.py** - Main Streamlit application entry point and UI orchestration
-2. **auth.py** - Session-based authentication system with temporary user IDs
-3. **database.py** - PostgreSQL database operations using SQLAlchemy raw SQL
-4. **models.py** - SQLAlchemy ORM models for User, Document, and QAInteraction entities
-5. **ai_service.py** - OpenAI API integration for summarization and Q&A
-6. **pdf_processor.py** - PDF validation and text extraction using PyMuPDF
-7. **utils.py** - Utility functions for file formatting and text processing
+2. **navbar.py** - Professional navigation bar with branding, dark mode, and user authentication features
+3. **auth.py** - Session-based authentication system with temporary user IDs
+4. **database.py** - PostgreSQL database operations using SQLAlchemy raw SQL
+5. **models.py** - SQLAlchemy ORM models for User, Document, and QAInteraction entities
+6. **gemini_service.py** - Google Gemini AI integration for summarization and Q&A with intelligent chunking
+7. **pdf_processor.py** - PDF validation and text extraction using PyMuPDF
+8. **utils.py** - Utility functions for file formatting and text processing
+9. **performance_optimizer.py** - System performance monitoring and optimization
 
 ### Data Models
 

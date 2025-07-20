@@ -72,6 +72,20 @@ def render_navbar():
         background: rgba(255, 255, 255, 0.1);
     }
     
+    /* File upload styling */
+    .file-info {
+        font-size: 14px !important;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        margin: 10px 0;
+    }
+    
+    .file-info h4 {
+        font-size: 16px !important;
+        margin-bottom: 5px;
+    }
+    
     /* Dark mode styles */
     .dark-mode {
         background-color: #1e1e1e;
@@ -140,23 +154,104 @@ def render_navbar():
         st.markdown("""
         <style>
         .stApp {
-            background-color: #1e1e1e;
-            color: #ffffff;
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
         }
         .stSidebar {
-            background-color: #2d2d2d;
+            background-color: #2d2d2d !important;
+        }
+        .stSidebar .stSelectbox > div > div {
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+        }
+        .stSidebar .stTextInput > div > div > input {
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+        }
+        .stSidebar .stTextArea > div > div > textarea {
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+        }
+        .stSidebar .stButton > button {
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+        }
+        .stSidebar .stMetric {
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
+        .stSidebar h1, .stSidebar h2, .stSidebar h3 {
+            color: #ffffff !important;
+        }
+        .stSidebar p, .stSidebar div {
+            color: #ffffff !important;
         }
         .stSelectbox > div > div {
-            background-color: #2d2d2d;
-            color: #ffffff;
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
         }
         .stTextInput > div > div > input {
-            background-color: #2d2d2d;
-            color: #ffffff;
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
         }
         .stTextArea > div > div > textarea {
-            background-color: #2d2d2d;
-            color: #ffffff;
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+        }
+        .stButton > button {
+            background-color: #3d3d3d !important;
+            color: #ffffff !important;
+            border: 1px solid #555 !important;
+        }
+        .stButton > button:hover {
+            background-color: #4d4d4d !important;
+        }
+        .stExpander {
+            background-color: #2d2d2d !important;
+            border: 1px solid #555 !important;
+        }
+        .stExpander .stMarkdown {
+            color: #ffffff !important;
+        }
+        /* File uploader dark mode */
+        .stFileUploader {
+            background-color: #3d3d3d !important;
+            border: 2px dashed #666 !important;
+            border-radius: 10px !important;
+        }
+        .stFileUploader label {
+            color: #ffffff !important;
+        }
+        /* Info boxes */
+        .stInfo {
+            background-color: #2d4f5f !important;
+            color: #ffffff !important;
+            border: 1px solid #4a7c7c !important;
+        }
+        .stSuccess {
+            background-color: #2d5f2d !important;
+            color: #ffffff !important;
+            border: 1px solid #4a7c4a !important;
+        }
+        .stWarning {
+            background-color: #5f5f2d !important;
+            color: #ffffff !important;
+            border: 1px solid #7c7c4a !important;
+        }
+        .stError {
+            background-color: #5f2d2d !important;
+            color: #ffffff !important;
+            border: 1px solid #7c4a4a !important;
         }
         </style>
         """, unsafe_allow_html=True)

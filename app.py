@@ -116,14 +116,15 @@ def show_upload_analyze_page(user_id):
             st.error("Invalid PDF file. Please upload a valid PDF document.")
             return
             
-        # Display file info
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("File Name", uploaded_file.name)
-        with col2:
-            st.metric("File Size", format_file_size(uploaded_file.size))
-        with col3:
-            st.metric("File Type", uploaded_file.type)
+        # Display file info with smaller text
+        st.markdown(f"""
+        <div class="file-info">
+            <h4>📁 File Information</h4>
+            <p><strong>Name:</strong> {uploaded_file.name}</p>
+            <p><strong>Size:</strong> {format_file_size(uploaded_file.size)}</p>
+            <p><strong>Type:</strong> {uploaded_file.type}</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Process PDF (optimized)  
         try:
