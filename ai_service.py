@@ -73,12 +73,13 @@ def start_ollama_service():
 def generate_ollama_response(prompt, system_prompt="You are a helpful AI assistant.", max_tokens=None):
     """Generate response using Ollama with performance optimizations"""
     try:
-        # Configure options for faster response
+        # Configure options for maximum speed
         options = {
-            'temperature': 0.3,  # Lower temperature for faster, more focused responses
-            'top_p': 0.9,
-            'top_k': 40,
-            'num_ctx': 2048,  # Reduced context window for speed
+            'temperature': 0.1,  # Very low temperature for fastest responses
+            'top_p': 0.7,
+            'top_k': 20,
+            'num_ctx': 1024,  # Very small context window for speed
+            'repeat_penalty': 1.1,
         }
         
         if max_tokens:
@@ -99,60 +100,41 @@ def generate_ollama_response(prompt, system_prompt="You are a helpful AI assista
         raise
 
 def generate_summary(text: str, length: str = "medium") -> str:
-    """
-    Generate a summary of the provided text using Ollama Mistral
-    
-    Args:
-        text (str): The text to summarize
-        length (str): Summary length - "short", "medium", or "long"
-    
-    Returns:
-        str: Generated summary
-    """
+    """Generate optimized summary using Ollama Mistral"""
     try:
-        # Check if Ollama service is available
-        if not check_ollama_service():
-            raise Exception("Ollama service is not available")
-        
-        # Define length specifications
-        length_specs = {
-            "short": "in 2-3 sentences, focusing only on the most critical points",
-            "medium": "in 1-2 paragraphs, covering the main topics and key details",
-            "long": "in 3-4 paragraphs, providing comprehensive coverage of all major points and supporting details"
-        }
-        
-        length_instruction = length_specs.get(length, length_specs["medium"])
-        
-        # Optimize text processing for speed
-        max_chars = 3000 if length == "short" else 4000 if length == "medium" else 5000
+        # Extremely aggressive text limiting for speed
+        max_chars = 1000 if length == "short" else 1500 if length == "medium" else 2000
         
         if len(text) > max_chars:
-            # Take first and last portions for better context
-            first_part = text[:max_chars//2]
-            last_part = text[-(max_chars//2):]
-            processed_text = first_part + "\n...[content truncated]...\n" + last_part
+            processed_text = text[:max_chars]
         else:
             processed_text = text
         
-        # Create optimized prompt
-        prompt = f"Summarize this document {length_instruction}:\n\n{processed_text}"
+        # Ultra-simple prompt for maximum speed
+        length_tokens = {"short": 30, "medium": 100, "long": 200}
+        max_tokens = length_tokens.get(length, 100)
         
-        system_prompt = "You are an expert document analyst. Provide clear, accurate summaries."
+        prompt = f"Summarize in {max_tokens} words:\n{processed_text}"
         
-        # Set max tokens based on summary type
-        max_tokens = 100 if length == "short" else 200 if length == "medium" else 400
+        # Generate summary with timeout protection
+        import signal
         
-        # Show progress to user
-        progress_placeholder = st.empty()
-        progress_placeholder.info("🤖 Generating summary...")
+        def timeout_handler(signum, frame):
+            raise TimeoutError("Summary generation timed out")
         
-        start_time = time.time()
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(30)  # 30 second timeout
         
-        # Generate summary using Ollama
-        summary = generate_ollama_response(prompt, system_prompt, max_tokens)
-        
-        elapsed_time = time.time() - start_time
-        progress_placeholder.success(f"✅ Summary ready in {elapsed_time:.1f}s")
+        try:
+            summary = generate_ollama_response(
+                prompt, 
+                "Summarize briefly.", 
+                max_tokens
+            )
+            signal.alarm(0)  # Cancel timeout
+        except TimeoutError:
+            signal.alarm(0)
+            raise Exception("Summary generation timed out (30s). Try a shorter document.")
         
         if not summary or not summary.strip():
             raise Exception("Empty summary generated")
@@ -165,45 +147,24 @@ def generate_summary(text: str, length: str = "medium") -> str:
         raise Exception(error_msg)
 
 def answer_question(document_text: str, question: str) -> str:
-    """
-    Answer a question based on the document content using Ollama Mistral
-    
-    Args:
-        document_text (str): The document content
-        question (str): The user's question
-    
-    Returns:
-        str: Generated answer
-    """
+    """Fast question answering using Ollama Mistral"""
     try:
-        # Check if Ollama service is available
-        if not check_ollama_service():
-            raise Exception("Ollama service is not available")
-        
-        # Optimize document text for faster processing
-        max_chars = 4000
+        # Aggressive text limiting for speed
+        max_chars = 3000
         if len(document_text) > max_chars:
-            # Use first part and try to find relevant sections
-            processed_text = document_text[:max_chars] + "...[document continues]"
+            processed_text = document_text[:max_chars] + "..."
         else:
             processed_text = document_text
         
-        # Create optimized prompt
-        prompt = f"Based on this document, answer: {question}\n\nDocument:\n{processed_text}"
+        # Simple, fast prompt
+        prompt = f"Answer briefly: {question}\n\nDocument: {processed_text}"
         
-        system_prompt = "Answer questions using only the provided document. Be concise and accurate."
-        
-        # Show progress to user
-        progress_placeholder = st.empty()
-        progress_placeholder.info("🤖 Finding answer...")
-        
-        start_time = time.time()
-        
-        # Generate answer using Ollama with token limit
-        answer = generate_ollama_response(prompt, system_prompt, max_tokens=200)
-        
-        elapsed_time = time.time() - start_time
-        progress_placeholder.success(f"✅ Answer ready in {elapsed_time:.1f}s")
+        # Generate answer with speed optimizations
+        answer = generate_ollama_response(
+            prompt, 
+            "Answer questions concisely based on the document.", 
+            max_tokens=150
+        )
         
         if not answer or not answer.strip():
             raise Exception("Empty answer generated")

@@ -30,7 +30,7 @@ def validate_pdf(uploaded_file) -> bool:
         return False
 
 def extract_text_from_pdf(uploaded_file) -> str:
-    """Extract text content from PDF file"""
+    """Extract text content from PDF file - optimized for speed"""
     try:
         # Reset file pointer
         uploaded_file.seek(0)
@@ -42,26 +42,28 @@ def extract_text_from_pdf(uploaded_file) -> str:
         doc = fitz.open(stream=file_bytes, filetype="pdf")
         
         extracted_text = ""
+        max_pages = min(doc.page_count, 50)  # Limit to 50 pages for speed
         
-        # Extract text from each page
-        for page_num in range(doc.page_count):
+        # Extract text from each page (optimized)
+        for page_num in range(max_pages):
             page = doc.load_page(page_num)
             
-            # Get text from page
-            page_text = page.get_text()
+            # Get text from page (faster method)
+            page_text = page.get_text("text")  # Use simple text extraction
             
             if page_text.strip():
-                # Add page separator
-                extracted_text += f"\n\n--- Page {page_num + 1} ---\n\n"
+                if page_num > 0:
+                    extracted_text += "\n\n"
                 extracted_text += page_text
             
         # Close the document
         doc.close()
         
-        # Clean up the text
-        cleaned_text = clean_extracted_text(extracted_text)
+        # Quick cleanup (remove excessive whitespace only)
+        extracted_text = re.sub(r'\n\s*\n\s*\n+', '\n\n', extracted_text)
+        extracted_text = re.sub(r' +', ' ', extracted_text)
         
-        return cleaned_text
+        return extracted_text.strip()
         
     except Exception as e:
         st.error(f"Error extracting text from PDF: {str(e)}")
