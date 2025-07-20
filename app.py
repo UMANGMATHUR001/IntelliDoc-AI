@@ -7,9 +7,9 @@ import io
 from auth import init_auth, check_authentication
 from database import init_database, get_user_documents, save_document, save_qa_interaction
 from pdf_processor import extract_text_from_pdf, validate_pdf
-from ai_service import generate_summary, answer_question
+from gemini_service import generate_summary, answer_question, check_gemini_service
 from utils import format_file_size, truncate_text
-from performance_optimizer import display_performance_dashboard, apply_speed_optimizations, optimized_ai_operation
+from performance_optimizer import display_performance_dashboard, apply_speed_optimizations
 
 # Page configuration
 st.set_page_config(
@@ -162,12 +162,12 @@ def show_upload_analyze_page(user_id):
             
             if generate_summary_btn:
                 try:
-                    summary = optimized_ai_operation(
-                        generate_summary, 
-                        f"{summary_length.title()} Summary Generation",
-                        extracted_text, 
-                        summary_length
-                    )
+                    # Check if Gemini is available
+                    if not check_gemini_service():
+                        st.error("Gemini AI service is not available. Please check your API key.")
+                        return
+                    
+                    summary = generate_summary(extracted_text, summary_length)
                     
                     # Save document to database
                     doc_id = save_document(
@@ -217,9 +217,7 @@ def show_upload_analyze_page(user_id):
                 if st.button("🔍 Get Answer", type="secondary"):
                     if question.strip():
                         try:
-                            answer = optimized_ai_operation(
-                                answer_question,
-                                "Question Answering",
+                            answer = answer_question(
                                 st.session_state['current_doc_content'],
                                 question
                             )
