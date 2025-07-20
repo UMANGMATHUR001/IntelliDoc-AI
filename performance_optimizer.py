@@ -9,11 +9,11 @@ import psutil
 import streamlit as st
 from typing import Dict, Any
 
-class OllamaPerformanceOptimizer:
-    """Optimize Ollama performance for faster responses"""
+class PerformanceOptimizer:
+    """Optimize system performance for faster AI responses"""
     
     def __init__(self):
-        self.ollama_url = "http://localhost:11434"
+        pass
         
     def check_system_resources(self) -> Dict[str, Any]:
         """Check system resources that affect Ollama performance"""
@@ -31,15 +31,9 @@ class OllamaPerformanceOptimizer:
         except Exception as e:
             return {"error": str(e)}
     
-    def optimize_ollama_settings(self) -> bool:
-        """Apply optimal settings for Ollama service"""
+    def check_performance_status(self) -> bool:
+        """Check system performance status for optimal AI processing"""
         try:
-            # Check if we can modify Ollama settings
-            response = requests.get(f"{self.ollama_url}/api/tags", timeout=5)
-            if response.status_code != 200:
-                st.warning("🔄 Ollama service is starting up...")
-                return False
-            
             # Log current performance status
             resources = self.check_system_resources()
             
@@ -52,43 +46,25 @@ class OllamaPerformanceOptimizer:
             
             return True
             
-        except requests.exceptions.ConnectionError:
-            st.info("🚀 Ollama service is starting up. Please wait a moment...")
-            return False
         except Exception as e:
-            st.warning(f"⚠️ Ollama service check: {e}")
+            st.warning(f"⚠️ Performance check: {e}")
             return False
     
-    def warm_up_model(self, model_name: str = "mistral") -> bool:
-        """Warm up the model for faster first response"""
-        try:
-            import ollama
+    def display_system_info(self) -> None:
+        """Display system information for debugging"""
+        resources = self.check_system_resources()
+        
+        if "error" not in resources:
+            col1, col2, col3 = st.columns(3)
             
-            st.info("🔥 Warming up AI model for faster responses...")
-            start_time = time.time()
+            with col1:
+                st.metric("CPU Usage", f"{resources['cpu_usage']:.1f}%")
             
-            # Simple warm-up prompt
-            response = ollama.chat(
-                model=model_name,
-                messages=[{"role": "user", "content": "Hello"}],
-                options={
-                    'num_predict': 5,
-                    'temperature': 0.1
-                }
-            )
+            with col2:
+                st.metric("Memory Available", f"{resources['memory_available_gb']:.1f} GB")
             
-            elapsed = time.time() - start_time
-            
-            if response:
-                st.success(f"✅ Model warmed up successfully in {elapsed:.1f}s")
-                return True
-            else:
-                st.warning("Model warm-up completed but no response received")
-                return False
-                
-        except Exception as e:
-            st.error(f"Model warm-up failed: {e}")
-            return False
+            with col3:
+                st.metric("Disk Free", f"{resources['disk_free_gb']:.1f} GB")
     
     def get_performance_tips(self) -> list:
         """Get performance optimization tips"""
@@ -127,7 +103,7 @@ class OllamaPerformanceOptimizer:
 
 def display_performance_dashboard():
     """Display performance monitoring dashboard"""
-    optimizer = OllamaPerformanceOptimizer()
+    optimizer = PerformanceOptimizer()
     
     st.sidebar.markdown("### 🚀 Performance Monitor")
     
@@ -153,9 +129,9 @@ def display_performance_dashboard():
         for tip in tips:
             st.sidebar.info(tip)
     
-    # Warm up model button
-    if st.sidebar.button("🔥 Warm Up AI Model"):
-        optimizer.warm_up_model()
+    # System info button
+    if st.sidebar.button("📊 System Info"):
+        optimizer.display_system_info()
     
     return optimizer
 
@@ -174,8 +150,8 @@ def apply_speed_optimizations():
     
     # Initialize performance optimizer
     if "performance_optimizer" not in st.session_state:
-        st.session_state.performance_optimizer = OllamaPerformanceOptimizer()
-        st.session_state.performance_optimizer.optimize_ollama_settings()
+        st.session_state.performance_optimizer = PerformanceOptimizer()
+        st.session_state.performance_optimizer.check_performance_status()
 
 # Usage example function
 def optimized_ai_operation(operation_func, operation_name, *args, **kwargs):
