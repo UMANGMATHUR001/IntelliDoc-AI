@@ -35,8 +35,9 @@ class OllamaPerformanceOptimizer:
         """Apply optimal settings for Ollama service"""
         try:
             # Check if we can modify Ollama settings
-            response = requests.get(f"{self.ollama_url}/api/tags")
+            response = requests.get(f"{self.ollama_url}/api/tags", timeout=5)
             if response.status_code != 200:
+                st.warning("🔄 Ollama service is starting up...")
                 return False
             
             # Log current performance status
@@ -51,8 +52,11 @@ class OllamaPerformanceOptimizer:
             
             return True
             
+        except requests.exceptions.ConnectionError:
+            st.info("🚀 Ollama service is starting up. Please wait a moment...")
+            return False
         except Exception as e:
-            st.error(f"Could not optimize Ollama settings: {e}")
+            st.warning(f"⚠️ Ollama service check: {e}")
             return False
     
     def warm_up_model(self, model_name: str = "mistral") -> bool:
