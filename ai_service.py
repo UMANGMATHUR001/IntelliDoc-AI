@@ -2,6 +2,8 @@ import os
 import json
 import ollama
 import streamlit as st
+import time
+from typing import Optional
 import requests
 import time
 
@@ -68,15 +70,27 @@ def start_ollama_service():
         st.warning(f"Could not start Ollama service: {str(e)}")
         return False
 
-def generate_ollama_response(prompt, system_prompt="You are a helpful AI assistant."):
-    """Generate response using Ollama"""
+def generate_ollama_response(prompt, system_prompt="You are a helpful AI assistant.", max_tokens=None):
+    """Generate response using Ollama with performance optimizations"""
     try:
+        # Configure options for faster response
+        options = {
+            'temperature': 0.3,  # Lower temperature for faster, more focused responses
+            'top_p': 0.9,
+            'top_k': 40,
+            'num_ctx': 2048,  # Reduced context window for speed
+        }
+        
+        if max_tokens:
+            options['num_predict'] = max_tokens
+        
         response = ollama.chat(
             model=OLLAMA_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ],
+            options=options,
             stream=False
         )
         return response["message"]["content"]
@@ -109,26 +123,36 @@ def generate_summary(text: str, length: str = "medium") -> str:
         
         length_instruction = length_specs.get(length, length_specs["medium"])
         
-        # Create the prompt
-        prompt = f"""
-Please provide a clear and comprehensive summary of the following document {length_instruction}.
-
-Focus on:
-1. Main topic and purpose of the document
-2. Key findings, conclusions, or recommendations
-3. Important supporting information
-4. Any significant data, dates, or figures mentioned
-
-Text to summarize:
-{text[:6000]}
-
-Summary:
-"""
+        # Optimize text processing for speed
+        max_chars = 3000 if length == "short" else 4000 if length == "medium" else 5000
         
-        system_prompt = "You are an expert document analyst. Provide clear, accurate, and well-structured summaries that capture the essential information from documents."
+        if len(text) > max_chars:
+            # Take first and last portions for better context
+            first_part = text[:max_chars//2]
+            last_part = text[-(max_chars//2):]
+            processed_text = first_part + "\n...[content truncated]...\n" + last_part
+        else:
+            processed_text = text
+        
+        # Create optimized prompt
+        prompt = f"Summarize this document {length_instruction}:\n\n{processed_text}"
+        
+        system_prompt = "You are an expert document analyst. Provide clear, accurate summaries."
+        
+        # Set max tokens based on summary type
+        max_tokens = 100 if length == "short" else 200 if length == "medium" else 400
+        
+        # Show progress to user
+        progress_placeholder = st.empty()
+        progress_placeholder.info("🤖 Generating summary...")
+        
+        start_time = time.time()
         
         # Generate summary using Ollama
-        summary = generate_ollama_response(prompt, system_prompt)
+        summary = generate_ollama_response(prompt, system_prompt, max_tokens)
+        
+        elapsed_time = time.time() - start_time
+        progress_placeholder.success(f"✅ Summary ready in {elapsed_time:.1f}s")
         
         if not summary or not summary.strip():
             raise Exception("Empty summary generated")
@@ -156,28 +180,30 @@ def answer_question(document_text: str, question: str) -> str:
         if not check_ollama_service():
             raise Exception("Ollama service is not available")
         
-        # Create the prompt
-        prompt = f"""
-Based on the following document, please answer the user's question accurately and comprehensively.
-
-Instructions:
-1. Only use information from the provided document
-2. If the answer cannot be found in the document, clearly state that
-3. Provide specific references or quotes when possible
-4. Be concise but thorough in your response
-
-Document:
-{document_text[:5000]}
-
-Question: {question}
-
-Answer:
-"""
+        # Optimize document text for faster processing
+        max_chars = 4000
+        if len(document_text) > max_chars:
+            # Use first part and try to find relevant sections
+            processed_text = document_text[:max_chars] + "...[document continues]"
+        else:
+            processed_text = document_text
         
-        system_prompt = "You are a helpful AI assistant that answers questions based strictly on the provided document content. Be accurate, informative, and cite specific parts of the document when relevant."
+        # Create optimized prompt
+        prompt = f"Based on this document, answer: {question}\n\nDocument:\n{processed_text}"
         
-        # Generate answer using Ollama
-        answer = generate_ollama_response(prompt, system_prompt)
+        system_prompt = "Answer questions using only the provided document. Be concise and accurate."
+        
+        # Show progress to user
+        progress_placeholder = st.empty()
+        progress_placeholder.info("🤖 Finding answer...")
+        
+        start_time = time.time()
+        
+        # Generate answer using Ollama with token limit
+        answer = generate_ollama_response(prompt, system_prompt, max_tokens=200)
+        
+        elapsed_time = time.time() - start_time
+        progress_placeholder.success(f"✅ Answer ready in {elapsed_time:.1f}s")
         
         if not answer or not answer.strip():
             raise Exception("Empty answer generated")

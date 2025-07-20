@@ -9,6 +9,7 @@ from database import init_database, get_user_documents, save_document, save_qa_i
 from pdf_processor import extract_text_from_pdf, validate_pdf
 from ai_service import generate_summary, answer_question
 from utils import format_file_size, truncate_text
+from performance_optimizer import display_performance_dashboard, apply_speed_optimizations, optimized_ai_operation
 
 # Page configuration
 st.set_page_config(
@@ -20,6 +21,9 @@ st.set_page_config(
 
 def main():
     """Main application function"""
+    # Apply performance optimizations
+    apply_speed_optimizations()
+    
     # Initialize database
     init_database()
     
@@ -74,6 +78,9 @@ def show_main_application():
         # Quick stats
         user_docs = get_user_documents(user_id)
         st.metric("Your Documents", len(user_docs))
+        
+        # Performance dashboard
+        display_performance_dashboard()
         
         if st.button("🚪 Logout", type="secondary", use_container_width=True):
             for key in list(st.session_state.keys()):
@@ -154,38 +161,42 @@ def show_upload_analyze_page(user_id):
                     )
                 
                 if generate_summary_btn:
-                    with st.spinner("Generating AI summary..."):
-                        try:
-                            summary = generate_summary(extracted_text, summary_length)
-                            
-                            # Save document to database
-                            doc_id = save_document(
-                                user_id=user_id,
-                                filename=uploaded_file.name,
-                                content=extracted_text,
-                                summary=summary,
-                                file_size=uploaded_file.size
-                            )
-                            
-                            st.session_state['current_doc_id'] = doc_id
-                            st.session_state['current_doc_content'] = extracted_text
-                            st.session_state['current_summary'] = summary
-                            
-                            # Display summary
-                            st.subheader("📋 Generated Summary")
-                            st.write(summary)
-                            
-                            # Download summary option
-                            st.download_button(
-                                label="📥 Download Summary",
-                                data=summary,
-                                file_name=f"{uploaded_file.name}_summary.txt",
-                                mime="text/plain"
-                            )
-                            
-                        except Exception as e:
-                            st.error(f"Failed to generate summary: {str(e)}")
-                            return
+                    try:
+                        summary = optimized_ai_operation(
+                            generate_summary, 
+                            f"{summary_length.title()} Summary Generation",
+                            extracted_text, 
+                            summary_length
+                        )
+                        
+                        # Save document to database
+                        doc_id = save_document(
+                            user_id=user_id,
+                            filename=uploaded_file.name,
+                            content=extracted_text,
+                            summary=summary,
+                            file_size=uploaded_file.size
+                        )
+                        
+                        st.session_state['current_doc_id'] = doc_id
+                        st.session_state['current_doc_content'] = extracted_text
+                        st.session_state['current_summary'] = summary
+                        
+                        # Display summary
+                        st.subheader("📋 Generated Summary")
+                        st.write(summary)
+                        
+                        # Download summary option
+                        st.download_button(
+                            label="📥 Download Summary",
+                            data=summary,
+                            file_name=f"{uploaded_file.name}_summary.txt",
+                            mime="text/plain"
+                        )
+                        
+                    except Exception as e:
+                        st.error(f"Failed to generate summary: {str(e)}")
+                        return
                 
                 # Q&A Section
                 if 'current_doc_content' in st.session_state:
@@ -205,31 +216,32 @@ def show_upload_analyze_page(user_id):
                     
                     if st.button("🔍 Get Answer", type="secondary"):
                         if question.strip():
-                            with st.spinner("Generating answer..."):
-                                try:
-                                    answer = answer_question(
-                                        st.session_state['current_doc_content'],
-                                        question
-                                    )
-                                    
-                                    # Save Q&A interaction
-                                    save_qa_interaction(
-                                        st.session_state['current_doc_id'],
-                                        question,
-                                        answer
-                                    )
-                                    
-                                    # Add to session history
-                                    st.session_state['qa_history'].append({
-                                        'question': question,
-                                        'answer': answer,
-                                        'timestamp': datetime.now()
-                                    })
-                                    
-                                    st.rerun()
-                                    
-                                except Exception as e:
-                                    st.error(f"Failed to generate answer: {str(e)}")
+                            try:
+                                answer = optimized_ai_operation(
+                                    answer_question,
+                                    "Question Answering",
+                                    st.session_state['current_doc_content'],
+                                    question
+                                )
+                                
+                                # Save Q&A interaction
+                                save_qa_interaction(
+                                    st.session_state['current_doc_id'],
+                                    question,
+                                    answer
+                                )
+                                
+                                # Add to session history
+                                st.session_state['qa_history'].append({
+                                    'question': question,
+                                    'answer': answer,
+                                    'timestamp': datetime.now()
+                                })
+                                
+                                st.rerun()
+                                
+                            except Exception as e:
+                                st.error(f"Failed to generate answer: {str(e)}")
                         else:
                             st.warning("Please enter a question.")
                     
