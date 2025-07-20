@@ -142,22 +142,23 @@ def show_upload_analyze_page(user_id):
             )
             
             # Summary options
-            st.subheader("📝 Generate Summary")
+            st.subheader("📝 Generate AI Summary")
             
             col1, col2 = st.columns([2, 1])
             with col1:
                 summary_length = st.selectbox(
-                    "Summary Length:",
+                    "Summary Style:",
                     ["short", "medium", "long"],
                     index=1,
-                    help="Choose the desired length of the summary"
+                    help="Short: 2-3 sentences | Medium: 1-2 paragraphs | Long: 3-4 paragraphs"
                 )
             
             with col2:
                 generate_summary_btn = st.button(
-                    "Generate Summary",
+                    "🚀 Generate Summary",
                     type="primary",
-                    use_container_width=True
+                    use_container_width=True,
+                    help="Uses free Gemini AI for fast, accurate summaries"
             )
             
             if generate_summary_btn:

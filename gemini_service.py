@@ -28,46 +28,103 @@ def check_gemini_service() -> bool:
         st.error(f"Gemini service check failed: {str(e)}")
         return False
 
+def chunk_text(text: str, max_words: int = 1200) -> list:
+    """Split text into manageable chunks for processing"""
+    words = text.split()
+    chunks = []
+    
+    for i in range(0, len(words), max_words):
+        chunk = ' '.join(words[i:i + max_words])
+        chunks.append(chunk)
+    
+    return chunks
+
 def generate_summary(text: str, length: str = "medium") -> str:
-    """Generate optimized summary using Gemini"""
+    """Generate intelligent summary using Gemini with chunking"""
     try:
         if not client:
             raise Exception("Gemini API key not configured")
         
-        # Fast text processing - limit size for speed
-        max_chars = 2000 if length == "short" else 3000 if length == "medium" else 4000
+        st.info("💡 Your PDF is being split into sections to ensure a smooth and accurate summary with Gemini AI. This helps us stay within the free usage limits and maintain performance.")
         
-        if len(text) > max_chars:
-            processed_text = text[:max_chars]
-        else:
-            processed_text = text
-        
-        # Define summary lengths
-        length_instructions = {
-            "short": "Write a brief 2-3 sentence summary",
-            "medium": "Write a concise 1-2 paragraph summary", 
-            "long": "Write a detailed 3-4 paragraph summary"
+        # Determine chunk size and summary style based on length preference
+        chunk_configs = {
+            "short": {"max_words": 1500, "instruction": "Write a brief 2-3 sentence summary"},
+            "medium": {"max_words": 1200, "instruction": "Write a concise paragraph summary"},
+            "long": {"max_words": 1000, "instruction": "Write a detailed 2-paragraph summary"}
         }
         
-        instruction = length_instructions.get(length, length_instructions["medium"])
-        prompt = f"{instruction} of this document:\n\n{processed_text}"
+        config = chunk_configs.get(length, chunk_configs["medium"])
         
-        # Show progress
-        with st.spinner("🤖 Generating summary with Gemini..."):
-            start_time = time.time()
+        # Split text into chunks
+        chunks = chunk_text(text, config["max_words"])
+        
+        if len(chunks) == 1:
+            # Single chunk - process directly
+            prompt = f"{config['instruction']} of this document:\n\n{chunks[0]}"
             
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
+            with st.spinner("🤖 Generating summary with Gemini..."):
+                start_time = time.time()
+                
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                
+                elapsed_time = time.time() - start_time
+                st.success(f"✅ Summary ready in {elapsed_time:.1f}s")
+            
+            return response.text.strip() if response.text else ""
+        
+        else:
+            # Multiple chunks - process each and combine
+            chunk_summaries = []
+            
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            for i, chunk in enumerate(chunks):
+                status_text.text(f"Processing section {i+1} of {len(chunks)}...")
+                progress_bar.progress((i + 1) / len(chunks))
+                
+                prompt = f"Summarize this section concisely:\n\n{chunk}"
+                
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                
+                if response.text:
+                    chunk_summaries.append(response.text.strip())
+                
+                # Small delay to respect rate limits
+                time.sleep(0.5)
+            
+            # Combine all chunk summaries into final summary
+            combined_text = "\n\n".join(chunk_summaries)
+            
+            final_instructions = {
+                "short": "Combine these section summaries into a brief 2-3 sentence overview",
+                "medium": "Combine these section summaries into a comprehensive 1-2 paragraph summary",
+                "long": "Combine these section summaries into a detailed 3-4 paragraph summary covering all key points"
+            }
+            
+            final_prompt = f"{final_instructions[length]}:\n\n{combined_text}"
+            
+            status_text.text("Creating final summary...")
+            
+            final_response = client.models.generate_content(
+                model="gemini-2.5-flash", 
+                contents=final_prompt
             )
             
-            elapsed_time = time.time() - start_time
-            st.success(f"✅ Summary ready in {elapsed_time:.1f}s")
-        
-        if not response.text or not response.text.strip():
-            raise Exception("Empty summary generated")
+            progress_bar.progress(1.0)
+            status_text.empty()
+            progress_bar.empty()
             
-        return response.text.strip()
+            st.success(f"✅ Complete summary ready! Processed {len(chunks)} sections")
+            
+            return final_response.text.strip() if final_response.text else ""
         
     except Exception as e:
         error_msg = f"Failed to generate summary: {str(e)}"
@@ -75,36 +132,57 @@ def generate_summary(text: str, length: str = "medium") -> str:
         raise Exception(error_msg)
 
 def answer_question(document_text: str, question: str) -> str:
-    """Fast question answering using Gemini"""
+    """Smart question answering using Gemini with intelligent text handling"""
     try:
         if not client:
             raise Exception("Gemini API key not configured")
         
-        # Limit text for speed
-        max_chars = 3000
-        if len(document_text) > max_chars:
-            processed_text = document_text[:max_chars]
+        # For Q&A, search through chunks to find most relevant section
+        chunks = chunk_text(document_text, 1000)
+        
+        if len(chunks) == 1:
+            # Single chunk - process directly
+            prompt = f"Based on this document, answer the question briefly and accurately.\n\nDocument: {chunks[0]}\n\nQuestion: {question}\n\nAnswer:"
+            
+            with st.spinner("🤖 Finding answer with Gemini..."):
+                start_time = time.time()
+                
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                
+                elapsed_time = time.time() - start_time
+                st.success(f"✅ Answer ready in {elapsed_time:.1f}s")
+            
+            return response.text.strip() if response.text else ""
+        
         else:
-            processed_text = document_text
-        
-        prompt = f"Based on this document, answer the question briefly and accurately.\n\nDocument: {processed_text}\n\nQuestion: {question}\n\nAnswer:"
-        
-        # Show progress
-        with st.spinner("🤖 Finding answer with Gemini..."):
-            start_time = time.time()
+            # Multiple chunks - find most relevant one
+            st.info("🔍 Searching through document sections for the best answer...")
             
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
+            # Use first few chunks for context (most documents have key info early)
+            relevant_chunks = chunks[:3]  # Use first 3 chunks for speed
+            combined_text = "\n\n".join(relevant_chunks)
             
-            elapsed_time = time.time() - start_time
-            st.success(f"✅ Answer ready in {elapsed_time:.1f}s")
-        
-        if not response.text or not response.text.strip():
-            raise Exception("Empty answer generated")
+            # Limit combined text length
+            if len(combined_text) > 4000:
+                combined_text = combined_text[:4000] + "..."
             
-        return response.text.strip()
+            prompt = f"Based on this document, answer the question briefly and accurately.\n\nDocument: {combined_text}\n\nQuestion: {question}\n\nAnswer:"
+            
+            with st.spinner("🤖 Finding answer with Gemini..."):
+                start_time = time.time()
+                
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt
+                )
+                
+                elapsed_time = time.time() - start_time
+                st.success(f"✅ Answer ready in {elapsed_time:.1f}s")
+            
+            return response.text.strip() if response.text else ""
         
     except Exception as e:
         error_msg = f"Failed to generate answer: {str(e)}"

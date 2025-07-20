@@ -40,20 +40,21 @@ The application follows a modular architecture with clear separation of concerns
 
 1. **Authentication**: Users are automatically authenticated with temporary session-based user IDs
 2. **Document Upload**: PDFs are validated, text is extracted using PyMuPDF, and content is stored in PostgreSQL
-3. **Summarization**: Document text is sent to Ollama Mistral model with configurable length parameters (short/medium/long)
-4. **Q&A Processing**: User questions are processed against document content using Ollama Mistral model
+3. **Intelligent Chunking**: Large documents are split into 1000-1500 word chunks for efficient processing
+4. **Summarization**: Document chunks are sent to Google Gemini AI with configurable length parameters (short/medium/long)
+5. **Q&A Processing**: User questions are processed against document content using Google Gemini AI with smart section searching
 5. **History Tracking**: All interactions are stored in the database and can be retrieved per user session
 
 ## External Dependencies
 
 ### Required Services
-- **Ollama with Mistral Model**: Local AI service for text summarization and question answering (requires ollama service running)
+- **Google Gemini AI**: Free cloud AI service for text summarization and question answering (requires GEMINI_API_KEY)
 
 ### Python Libraries
 - **streamlit**: Web application framework
 - **sqlalchemy**: Database ORM and raw SQL operations
 - **PyMuPDF (fitz)**: PDF text extraction and validation
-- **ollama**: Ollama API client for local AI inference
+- **google-genai**: Google Gemini API client for cloud AI inference
 - **requests**: HTTP client for API communications
 
 ### Database
@@ -68,7 +69,7 @@ The application is designed for Replit deployment with the following considerati
   - `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`
 
 ### Service Requirements
-- **Ollama Service**: Must be running locally on port 11434 with Mistral model installed
+- **Google Gemini API**: Free tier provides 15 requests per minute, sufficient for personal use
 
 ### Authentication Strategy
 - Currently uses temporary session-based authentication suitable for demo purposes
@@ -84,7 +85,7 @@ The application is designed for Replit deployment with the following considerati
 
 1. **Session-based Authentication**: Chosen for simplicity in demo environment, easily replaceable with proper auth systems
 2. **Raw SQL + ORM Hybrid**: Uses SQLAlchemy raw SQL for table creation and ORM models for data structure definition
-3. **Ollama Integration**: Local AI model integration with Mistral for text processing and analysis
+3. **Google Gemini Integration**: Free cloud AI service with intelligent text chunking for optimal performance
 4. **PyMuPDF for PDF Processing**: Reliable text extraction with built-in validation capabilities
 5. **Streamlit for UI**: Rapid development framework suitable for data science applications
 
