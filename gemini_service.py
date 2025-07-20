@@ -63,16 +63,11 @@ def generate_summary(text: str, length: str = "medium") -> str:
             # Single chunk - process directly
             prompt = f"{config['instruction']} of this document:\n\n{chunks[0]}"
             
-            with st.spinner("🤖 Generating summary with Gemini..."):
-                start_time = time.time()
-                
+            with st.spinner("🤖 Generating summary..."):
                 response = client.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=prompt
                 )
-                
-                elapsed_time = time.time() - start_time
-                st.success(f"✅ Summary ready in {elapsed_time:.1f}s")
             
             return response.text.strip() if response.text else ""
         
@@ -122,7 +117,7 @@ def generate_summary(text: str, length: str = "medium") -> str:
             status_text.empty()
             progress_bar.empty()
             
-            st.success(f"✅ Complete summary ready! Processed {len(chunks)} sections")
+            st.success("✅ Summary complete!")
             
             return final_response.text.strip() if final_response.text else ""
         
@@ -144,16 +139,11 @@ def answer_question(document_text: str, question: str) -> str:
             # Single chunk - process directly
             prompt = f"Based on this document, answer the question briefly and accurately.\n\nDocument: {chunks[0]}\n\nQuestion: {question}\n\nAnswer:"
             
-            with st.spinner("🤖 Finding answer with Gemini..."):
-                start_time = time.time()
-                
+            with st.spinner("🔍 Finding answer..."):
                 response = client.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=prompt
                 )
-                
-                elapsed_time = time.time() - start_time
-                st.success(f"✅ Answer ready in {elapsed_time:.1f}s")
             
             return response.text.strip() if response.text else ""
         
@@ -171,16 +161,11 @@ def answer_question(document_text: str, question: str) -> str:
             
             prompt = f"Based on this document, answer the question briefly and accurately.\n\nDocument: {combined_text}\n\nQuestion: {question}\n\nAnswer:"
             
-            with st.spinner("🤖 Finding answer with Gemini..."):
-                start_time = time.time()
-                
+            with st.spinner("🔍 Finding answer..."):
                 response = client.models.generate_content(
                     model="gemini-2.5-flash",
                     contents=prompt
                 )
-                
-                elapsed_time = time.time() - start_time
-                st.success(f"✅ Answer ready in {elapsed_time:.1f}s")
             
             return response.text.strip() if response.text else ""
         

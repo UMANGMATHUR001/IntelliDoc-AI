@@ -10,11 +10,12 @@ from pdf_processor import extract_text_from_pdf, validate_pdf
 from gemini_service import generate_summary, answer_question, check_gemini_service
 from utils import format_file_size, truncate_text
 from performance_optimizer import display_performance_dashboard, apply_speed_optimizations
+from navbar import render_navbar, get_user_info
 
 # Page configuration
 st.set_page_config(
-    page_title="AI PDF Summarizer & Q&A",
-    page_icon="📚",
+    page_title="IntelliDoc AI - Smart PDF Analysis",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -64,7 +65,7 @@ def show_main_application():
     
     # Sidebar
     with st.sidebar:
-        st.title("📚 PDF Analyzer")
+        st.title("🧠 IntelliDoc AI")
         st.write(f"👤 User: {user_id}")
         
         # Navigation
@@ -97,6 +98,9 @@ def show_main_application():
 
 def show_upload_analyze_page(user_id):
     """Display the upload and analyze page"""
+    # Render navbar
+    render_navbar()
+    
     st.title("📄 Upload & Analyze PDF")
     
     # File upload
