@@ -167,7 +167,7 @@ def render_navbar():
             --dark-surface: #1a1a1a;
             --dark-surface-2: rgba(255, 255, 255, 0.05);
             --dark-border: rgba(255, 255, 255, 0.1);
-            --dark-text: #ffffff;
+            --dark-text: #FFFFFF;
             --dark-text-muted: rgba(255, 255, 255, 0.7);
         }
         
