@@ -1,0 +1,7 @@
+Enhance dark mode appearance and fix visibility issues for small text boxes
+
+Improves dark mode styling by applying color variables, transparency, and optimizes `st.rerun()` for faster theme switching in `navbar.py`.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: 7c67df92-6e64-41c2-a280-30a6041e31ba
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/6a777c11-b6b6-4587-83a4-69f370c0fc61/7c67df92-6e64-41c2-a280-30a6041e31ba/AuCci5x
