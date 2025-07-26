@@ -5,9 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "google-genai>=1.26.0",
-    "ollama>=0.5.1",
     "openai>=1.97.0",
-    "psutil>=7.0.0",
     "psycopg2-binary>=2.9.10",
     "pymupdf>=1.26.3",
     "requests>=2.32.4",

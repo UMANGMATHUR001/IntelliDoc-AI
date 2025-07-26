@@ -1,6 +1,0 @@
-[server]
-headless = true
-address = 8501
-
-[theme]
-base = "light"

@@ -1,0 +1,40 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# VSCode settings
+.vscode/
+*.code-workspace
+
+# Streamlit cache
+.streamlit/
+.streamlit/secrets.toml
+
+# Environment variables
+.env
+
+# Logs and debug
+*.log
+*.out
+*.err
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Other
+*.sqlite3
+*.db
+*.db-journal
