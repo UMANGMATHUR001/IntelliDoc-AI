@@ -124,7 +124,7 @@ def render_navbar():
     navbar_html = f"""
     <div class="navbar">
         <div class="navbar-brand">
-            🧠 IntelliDoc AI
+            🧠AskMyPDF
         </div>
         <div class="navbar-actions">
             <span style="color: rgba(255, 255, 255, 0.8); font-size: 14px;">

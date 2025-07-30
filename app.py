@@ -14,7 +14,7 @@ from navbar import render_navbar, get_user_info
 
 # Page configuration
 st.set_page_config(
-    page_title="IntelliDoc AI - Smart PDF Analysis",
+    page_title="AskMyPDF- Smart PDF Analysis",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -65,7 +65,7 @@ def show_main_application():
     
     # Sidebar
     with st.sidebar:
-        st.title("🧠 IntelliDoc AI")
+        st.title("🧠AskMyPDF")
         st.write(f"👤 User: {user_id}")
         
         # Navigation
@@ -101,7 +101,7 @@ def show_upload_analyze_page(user_id):
     # Render navbar
     render_navbar()
     
-    st.title("📄 Upload & Analyze PDF")
+    st.title("📄Upload & Analyze PDF")
     
     # File upload
     uploaded_file = st.file_uploader(

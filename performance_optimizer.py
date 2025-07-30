@@ -101,8 +101,8 @@ def apply_speed_optimizations():
     """Apply various speed optimizations."""
     if "page_config_set" not in st.session_state:
         st.set_page_config(
-            page_title="PDF AI Analyzer",
-            page_icon="📄",
+            page_title="AskMyPDF- Smart PDF Analysis",
+            page_icon="🧠",
             layout="wide",
             initial_sidebar_state="expanded"
         )
